@@ -1,1 +1,7 @@
-https://github.com/jiajiaaihuahua/Test1.git 
+ private long id;
+    private long idUser;
+    private double Incomevd;
+    private String Income_detailed;
+    private double Expenditure;
+    private String Expenditure_detailed;
+    private Date Bill_Date;
