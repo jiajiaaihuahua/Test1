@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>readme.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h1 id="%E8%A5%BF%E5%8D%97%E5%B7%A1%E6%A3%80%E9%A1%B9%E7%9B%AE%E8%AF%B4%E6%98%8E%E4%B9%A6"><strong>西南巡检项目说明书</strong></h1>
+<p><code>此为我对西南巡检通过代码和沟通方式得到的汇总文档。</code></p>
+<h2 id="pis%E5%AF%B9%E6%8E%A5"><strong>PIS对接</strong></h2>
+ <hr>  
+<ol>
+<li>代码位置,PIS同步使用webservice，客户端所需JAR包位置在WEB-INF/lib下。
+<blockquote>
+<p>cn.jasgroup.jasframework.piswebserviceutil</p>
+</blockquote>
+</li>
+<li>同步PIS需要的两把锁</li>
+</ol>
+<ul>
+<li>系统集成号 SN<br>
+<code>系统集成号SN有系统集成号起始有效期和系统集成号终止有效期，如果系统集成号时间过期，则要重新获取系统集成号。</code></li>
+</ul>
+<pre class="hljs"><code><div>	<span class="hljs-comment">/**
+	 * 
+	 * 同步系统集成号
+	 * <span class="hljs-doctag">@param</span> &lt;oldSN&gt; &lt;String&gt;
+	 *        &lt;旧系统集成号&gt;
+	 * <span class="hljs-doctag">@throws</span> Exception 
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">SyncSN</span><span class="hljs-params">(String oldSN)</span><span class="hljs-keyword">throws</span> Exception</span>{
+		String webServiceUrl = ReadConfigUtil.getPlatformConfig(<span class="hljs-string">"pis.systemSafetyService"</span>);
+		Service serviceModel = <span class="hljs-keyword">new</span> ObjectServiceFactory().create(ISystemSafety.class);
+		XFireProxyFactory serviceFactory = <span class="hljs-keyword">new</span> XFireProxyFactory(XFireFactory.newInstance().getXFire());
+		ISystemSafety service = (ISystemSafety) serviceFactory.create(serviceModel, webServiceUrl);
+		String[] strs = (String[])service.GetSN(oldSN);
+    	<span class="hljs-keyword">if</span>(strs.length&gt;<span class="hljs-number">0</span>){
+    		SN = strs[<span class="hljs-number">0</span>];
+    		SNBD = strs[<span class="hljs-number">1</span>];
+    		SNED = strs[<span class="hljs-number">2</span>];
+    	}
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;
+	}
+</div></code></pre>
+<ul>
+<li>数字令牌 DT<br>
+<code>数字令牌也有过期时间，如果数字令牌过期，则需要重新获取数字令牌 ，首先要判断系统集成号是否过期，如果过期，则重新获取系统集成号，否则直接获取数字令牌。</code></li>
+</ul>
+<pre class="hljs"><code><div>    <span class="hljs-comment">/**
+	 * 同步数字令牌
+	 * <span class="hljs-doctag">@param</span> sn
+	 * <span class="hljs-doctag">@throws</span> Exception 
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">SyncDT</span><span class="hljs-params">(String sn)</span> <span class="hljs-keyword">throws</span> Exception</span>{
+    	String webServiceUrl = ReadConfigUtil.getPlatformConfig(<span class="hljs-string">"pis.systemSafetyService"</span>);
+    	Service serviceModel = <span class="hljs-keyword">new</span> ObjectServiceFactory().create(ISystemSafety.class);
+		XFireProxyFactory serviceFactory = <span class="hljs-keyword">new</span> XFireProxyFactory(XFireFactory.newInstance().getXFire());
+		ISystemSafety service = (ISystemSafety) serviceFactory.create(serviceModel, webServiceUrl);
+		String[] strs = (String[])service.GetDT(sn);
+    	<span class="hljs-keyword">if</span>(strs.length&gt;<span class="hljs-number">0</span>){
+    		DT = strs[<span class="hljs-number">0</span>];
+    		DTBD = strs[<span class="hljs-number">1</span>];
+    		DTED = strs[<span class="hljs-number">2</span>];
+    	}
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;
+	}
+</div></code></pre>
+<ol start="3">
+<li>PIS同步数据包含以下几项。</li>
+</ol>
+<ul>
+<li>同步管线数据<br>
+<code>syncPineLoop()</code></li>
+<li>同步桩数据<br>
+<code>syncMarker(String lineloopid)</code></li>
+<li>同步巡检范围<br>
+<code>syncSubIns()</code></li>
+<li>同步不巡检范围<br>
+<code>syncUnSubIns()</code></li>
+<li>同步部门<br>
+<code>syncPisUnit()</code></li>
+<li>同步用户<br>
+<code>syncPisUser()</code></li>
+<li>同步增量计划<br>
+<code>syncIncInspectionPlan()</code></li>
+<li>同步全部计划<br>
+<code>syncAllInspectionPlan()</code></li>
+</ul>
+<h2 id="%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8"><strong>考核报表</strong></h2>
+<hr>  
+<h3 id="%E7%BB%BC%E5%90%88%E8%AF%84%E5%88%86%E8%AE%A1%E7%AE%97%E8%AF%B4%E6%98%8E"><code>综合评分计算说明</code></h3>
+<ol>
+<li>分公司各站平均分数，得分四舍五入保留整数；</li>
+<li>红色警告：巡检完成率低于80%，需重点监察；</li>
+<li>蓝色警告：巡检完成率低于90%，需加强管理；</li>
+<li>管道线路巡检计划覆盖率=（制定巡检计划的管道里程/管道总里程）×100%；低于100%以红色展示；</li>
+<li>管道线路巡检任务覆盖率=（落实巡检任务的管道里程/管道总里程）×100%；低于100%以红色展示；</li>
+<li>管道线路巡检完成率=各分公司所辖站队总成绩/各分公司所辖巡检站队总数；</li>
+</ol>
+<h3 id="%E9%83%A8%E9%97%A8%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8%EF%BC%8C%E6%AD%A4%E5%B1%9E%E4%BA%8E%E5%B7%A1%E7%BA%BF%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8%E6%88%96%E8%80%85%E7%AE%A1%E9%81%93%E5%B7%A5%E8%80%83%E6%A0%B8%E7%9A%84%E4%B8%80%E7%BA%A7%E5%B1%95%E7%A4%BA%E9%A1%B5%E9%9D%A2"><code>部门考核报表，此属于巡线工考核报表或者管道工考核的一级展示页面</code></h3>
+<ol>
+<li>代码位置、</li>
+</ol>
+<blockquote>
+<p>cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreService.java<br>
+主要代码部分 statisticsScoreUnit(String statisticsdate) 方法，参数为需要统计的日期。</p>
+</blockquote>
+<h3 id="%E5%B7%A1%E7%BA%BF%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8"><code>巡线工考核报表</code></h3>
+<h3 id="%E7%AE%A1%E9%81%93%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8"><code>管道工考核报表</code></h3>
+<blockquote>
+<p>管道工统计是一个定时任务，代码位置：cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreService.java 中的statisticsScoreG 方法。只需执行此方法就可以吧统计完的数据存在表gps_inspector_score中。</p>
+</blockquote>
+<pre class="hljs"><code><div>	<span class="hljs-comment">/*************************************************管道工统计 开始*******************************************************/</span>
+	<span class="hljs-comment">/**
+	 * 
+	 * 管道工分数统计
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">statisticsScoreG</span><span class="hljs-params">(String nowDate)</span></span>{
+		inspectortype = <span class="hljs-string">"02"</span>;
+		<span class="hljs-comment">//开始时间</span>
+		String beginDate = DateTime.getDateChange(nowDate, -<span class="hljs-number">7</span>);
+		<span class="hljs-comment">//结束时间</span>
+		String endDate = DateTime.getDateChange(nowDate, -<span class="hljs-number">1</span>);
+		
+		<span class="hljs-comment">//获取全部任务部门</span>
+		List&lt;Unit&gt; unitList = statisticsScoreDao.queryUnit(<span class="hljs-keyword">null</span>);
+		
+		<span class="hljs-comment">//分部门计算巡检人员分数</span>
+		<span class="hljs-keyword">try</span> {
+			<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; unitList.size(); i++){ 
+				Unit u = unitList.get(i);
+				System.out.println(u.getUnitName());
+				<span class="hljs-keyword">int</span> bufferwidth = gpsBufferWidthService.getBufferwidth(u.getOid(), <span class="hljs-number">0</span>);
+				<span class="hljs-keyword">this</span>.queryScore(endDate, u.getOid(),bufferwidth);
+			}
+		} <span class="hljs-keyword">catch</span> (Exception e) {
+			e.printStackTrace();
+		}
+		<span class="hljs-comment">//部门分数计算（管道工）</span>
+		statisticsScoreUnit(endDate);
+	}
+	<span class="hljs-comment">/*************************************************管道工统计 结束*******************************************************/</span>
+}
+</div></code></pre>
+<h4 id="%E6%A6%82%E8%A6%81">概要</h4>
+<ul>
+<li>首先获取到所有的部门，（根据每个部门获取到该部门下的所有人员的巡检分数。）
+<ul>
+<li>根据部门获取到该部门的缓冲带宽度。（缓冲带宽度涉及的表gps_buffer_width）</li>
+<li>按照统计时间，部门ID和部门缓冲范围获取该部门下的所有管道工人员</li>
+</ul>
+<ul>
+<li>计算每位管道工人员的分数
+<ul>
+<li>通过调用queryLineLocation方法获取到该人员的所有得分情况</li>
+<li>将每位管道工人员的得分情况保存到表gps_inspector_score中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0%E6%AD%A5%E5%A5%8F">具体实现步奏</h4>
+<ul>
+<li>获取管道工人员的考核分数关键性代码如下。</li>
+</ul>
+<ol>
+<li><code>关键步奏就是获取到此人的巡检任务，巡检任务中包含了巡检时间和巡检关键点信息，因为巡检时间和巡检关键点都是分开表存储，所以取值的时候有点麻烦。</code></li>
+</ol>
+<ul>
+<li>获取每个人员的巡检任务 （巡检任务表 gps_instask_day ）
+<ul>
+<li>获取巡检任务时间 （ gps_instask_day_line_time ）
+<ul>
+<li>通过巡检任务时间找到巡检任务关键点（ gps_instask_day_point ）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li><code>获取到每位管道工的临时任务（ GPS_TEMPORARY_TASK ）</code></li>
+<li><code>循环管道工所有的任务数据</code></li>
+<li><code>关键点分数计算， 实际巡检的关键点数量 / 应该巡检的关键点数量</code><br>
+<code>临时关键点的计算，同上</code></li>
+<li><strong><code>计算巡检完成率（轨迹线匹配度占比0%，关键点占比90%，临时关键点占比10%）</code></strong><br>
+<strong><code>巡检完成率 = 轨迹线匹配度 * 0 + 关键点分数 * 0.9 + 临时关键点分数 * 0.1 , 巡检完成率为0视为异常数据</code></strong></li>
+<li><code>计算轨迹线的匹配度</code></li>
+</ol>
+<ul>
+<li>通过任务管线的集合获取到标准的轨迹线点
+<ul>
+<li>
+<p>通过管线ID和巡检人员ID获取到巡检管线上的所有关键点。（ 涉及的表有GPS_PATHLINE_MAIN, GPS_PATHLINE_XYPOINT ）</p>
+</li>
+<li>
+<p>拼接标准轨迹线点转换成线对象 <a href="http://desktop.arcgis.com/zh-cn/arcmap/10.3/analyze/arcpy-classes/polyline.htm">Polyline</a></p>
+</li>
+<li>
+<p>通过调用我们系统封装的lengthRadioOfIntersectedPaths 方法 传入标准轨迹线和巡检gps轨迹线的线对象以及缓冲区的宽度，得到轨迹线与标准轨迹线缓冲区轨迹重叠的长度占比.</p>
+<ul>
+<li>首先要根据人员和管线获取到该人员要巡检的标准管线点。</li>
+<li>根据任务的时间分别获取到不同的时间段内人员巡检的实际轨迹线。</li>
+<li>通过任务时间段内，此人员的实际轨迹线和标准轨迹线通过arcgis服务提供的方法计算出重叠的长度占比。( 多天一巡和一天多巡的方式有点区别。但是最后得到的占比是相对于每一条管线的。)</li>
+</ul>
+<p><span style = 'color:red'>注意：此处代码需要验证，如果是一天多巡，就是每个时间段计算一次标准轨迹点与实际巡检轨迹点的匹配度，然后最终的匹配度是除以巡检时间的数量取平均值；如果是多天一巡，就把该时间段内的所有巡检点组成一条线对象，最终计算与标准轨迹线的匹配度，多天一巡匹配度的计算需要奎斌解答。</span></p>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-comment">/**
+	 * 获取巡检人员 考核数据
+	 *  <span class="hljs-doctag">@param</span> statisticsdate 统计日期
+	 *  <span class="hljs-doctag">@param</span> insoid 巡检人员
+	 *  <span class="hljs-doctag">@param</span> deviceoid 设备标识
+	 *  <span class="hljs-doctag">@param</span> unitid 巡检人员部门
+	 *  <span class="hljs-doctag">@param</span> scoreList 统计结果集合
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">queryLineLocation</span><span class="hljs-params">(String statisticsdate,String insoid,String deviceoid,String unitid,List&lt;GpsInsScore&gt; scoreList,<span class="hljs-keyword">int</span> bufferwidth)</span> <span class="hljs-keyword">throws</span> Exception</span>{
+		
+		<span class="hljs-comment">//获取巡检人员任务数据</span>
+		List&lt;GpsSyncTaskBo&gt; taskList = syncTaskService.syncTask(insoid, statisticsdate);
+		<span class="hljs-comment">//轨迹线匹配度</span>
+		<span class="hljs-keyword">double</span> pathlinerate = <span class="hljs-number">0</span>;
+		<span class="hljs-comment">//应巡关键点数</span>
+		<span class="hljs-keyword">int</span> ykeypointnum = <span class="hljs-number">0</span>;
+		<span class="hljs-comment">//实巡关键点数</span>
+		<span class="hljs-keyword">int</span> skeypointnum = <span class="hljs-number">0</span>;
+		
+		<span class="hljs-comment">//获取巡检人员临时关键点任务</span>
+		List&lt;Map&lt;String,Object&gt;&gt; temporarytaskList = statisticsScoreDao.queryTemporarytask(insoid, statisticsdate);
+		<span class="hljs-comment">//应巡临时关键点数</span>
+		<span class="hljs-keyword">int</span> ytemporarykeypointnum = <span class="hljs-number">0</span>;
+		<span class="hljs-comment">//实巡临时关键点数</span>
+		<span class="hljs-keyword">int</span> stemporarykeypointnum = <span class="hljs-number">0</span>;
+		
+		<span class="hljs-comment">//如果有任务数据继续执行以下代码</span>
+		<span class="hljs-keyword">if</span>((taskList != <span class="hljs-keyword">null</span> &amp;&amp; taskList.size() &gt; <span class="hljs-number">0</span>) || (temporarytaskList != <span class="hljs-keyword">null</span> &amp;&amp; temporarytaskList.size() &gt; <span class="hljs-number">0</span>)){
+			<span class="hljs-comment">//循环任务计算巡检完成率和考核分数</span>
+			<span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>;i&lt;taskList.size();i++){
+				GpsSyncTaskBo bo = taskList.get(i);
+				<span class="hljs-comment">//获取巡检任务时间段集合</span>
+				List&lt;GpsSyncTaskTimeBo&gt; timeList = bo.getTasktime();
+				<span class="hljs-comment">//获取巡检任务相关线路</span>
+				List&lt;GpsInstaskDayLine&gt; lineList = statisticsScoreDao.getTaskLine(bo.getOid());
+				<span class="hljs-comment">//计算轨迹线匹配度</span>
+				pathlinerate = <span class="hljs-keyword">this</span>.getTaskCompletionrate(timeList, lineList,bo.getInspectorid(),bo.getInsfrequnitval(),bufferwidth);
+				
+				<span class="hljs-comment">//insfrequnitval 大于1为多天一巡</span>
+				<span class="hljs-keyword">if</span>(bo.getInsfrequnitval() &gt; <span class="hljs-number">1</span>){
+					<span class="hljs-comment">//获取任务关键点已打点和未打点数据</span>
+					Map&lt;String,Object&gt; taskKeyPointMap = statisticsScoreDao.queryTaskKeyPointStatusDays(bo.getOid());
+					<span class="hljs-keyword">if</span>(taskKeyPointMap != <span class="hljs-keyword">null</span>){
+						skeypointnum = Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"s"</span>)+<span class="hljs-string">""</span>);
+						ykeypointnum = skeypointnum + Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"w"</span>)+<span class="hljs-string">""</span>);
+					}
+				}<span class="hljs-keyword">else</span>{
+					<span class="hljs-comment">//获取任务关键点已打点和未打点数据</span>
+					Map&lt;String,Object&gt; taskKeyPointMap = statisticsScoreDao.queryTaskKeyPointStatus(bo.getOid());
+					<span class="hljs-keyword">if</span>(taskKeyPointMap != <span class="hljs-keyword">null</span>){
+						skeypointnum = Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"s"</span>)+<span class="hljs-string">""</span>);
+						ykeypointnum = skeypointnum + Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"w"</span>)+<span class="hljs-string">""</span>);
+					}
+				}
+			}
+			
+			<span class="hljs-comment">//循环临时关键点任务</span>
+			<span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>;i&lt;temporarytaskList.size();i++){
+				Map&lt;String,Object&gt; temporarytask = temporarytaskList.get(i);
+				<span class="hljs-comment">//巡检频次</span>
+				<span class="hljs-keyword">int</span> insfreq = temporarytask.get(<span class="hljs-string">"insfreq"</span>) == <span class="hljs-keyword">null</span> ? <span class="hljs-number">0</span> : Integer.parseInt(temporarytask.get(<span class="hljs-string">"insfreq"</span>)+<span class="hljs-string">""</span>);
+				<span class="hljs-comment">//临时关键点任务oid</span>
+				String temporarytaskoid = temporarytask.get(<span class="hljs-string">"oid"</span>)+<span class="hljs-string">""</span>;
+				<span class="hljs-comment">//insfreq 第一个数字表示几天，第二个数字表示几巡</span>
+				<span class="hljs-keyword">if</span>(insfreq &gt;= <span class="hljs-number">21</span>){
+					<span class="hljs-comment">//获取任务关键点已打点和未打点数据</span>
+					Map&lt;String,Object&gt; taskKeyPointMap = statisticsScoreDao.queryTemporaryKeyPointStatusDays(temporarytaskoid);
+					<span class="hljs-keyword">if</span>(taskKeyPointMap != <span class="hljs-keyword">null</span>){
+						stemporarykeypointnum = Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"s"</span>)+<span class="hljs-string">""</span>);
+						ytemporarykeypointnum = skeypointnum + Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"w"</span>)+<span class="hljs-string">""</span>);
+					}
+				}<span class="hljs-keyword">else</span>{
+					<span class="hljs-comment">//获取任务关键点已打点和未打点数据</span>
+					Map&lt;String,Object&gt; taskKeyPointMap = statisticsScoreDao.queryTemporaryKeyPointStatus(temporarytaskoid);
+					<span class="hljs-keyword">if</span>(taskKeyPointMap != <span class="hljs-keyword">null</span>){
+						stemporarykeypointnum = Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"s"</span>)+<span class="hljs-string">""</span>);
+						ytemporarykeypointnum = stemporarykeypointnum + Integer.parseInt(taskKeyPointMap.get(<span class="hljs-string">"w"</span>)+<span class="hljs-string">""</span>);
+					}
+				}
+			}
+			
+			<span class="hljs-comment">//获取人员巡检区段</span>
+			List&lt;GpsInsrange&gt; list = statisticsScoreDao.queryLineLocation(insoid);
+			<span class="hljs-comment">//起始位置</span>
+			String blocation = <span class="hljs-string">""</span>;
+			<span class="hljs-comment">//终止位置</span>
+			String elocation = <span class="hljs-string">""</span>;
+			<span class="hljs-comment">//巡线里程</span>
+			<span class="hljs-keyword">double</span> linelength = <span class="hljs-number">0</span>;
+			
+			<span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>;i&lt;list.size();i++){
+				GpsInsrange ge = list.get(i);
+				<span class="hljs-keyword">if</span>(i == list.size()-<span class="hljs-number">1</span>){
+					blocation += ge.getBeginlocation();
+					elocation += ge.getEndlocation();
+				}<span class="hljs-keyword">else</span>{
+					blocation += ge.getBeginlocation() + <span class="hljs-string">","</span>;
+					elocation += ge.getEndlocation() + <span class="hljs-string">","</span>;
+				}
+				<span class="hljs-comment">//计算巡线里程</span>
+				linelength += ge.getEndstation() - ge.getBeginstation();
+			}
+			
+			<span class="hljs-comment">//巡检完成率</span>
+			<span class="hljs-keyword">double</span> completionrate = <span class="hljs-number">0</span> ;
+			
+			<span class="hljs-comment">//关键点分数计算(实巡关键点/应巡关键点)</span>
+			<span class="hljs-keyword">double</span> keyPointScore = skeypointnum / ykeypointnum;
+			keyPointScore = Double.parseDouble(String.format(<span class="hljs-string">"%.2f"</span>,keyPointScore * <span class="hljs-number">100</span>));
+			
+			<span class="hljs-comment">//临时关键点分数计算(实巡临时关键点/应巡临时关键点)</span>
+			<span class="hljs-keyword">double</span> temporaryKeyPointScore = stemporarykeypointnum / ytemporarykeypointnum;
+			temporaryKeyPointScore = Double.parseDouble(String.format(<span class="hljs-string">"%.2f"</span>,temporaryKeyPointScore * <span class="hljs-number">100</span>));
+			
+			<span class="hljs-comment">//计算巡检完成率（轨迹线匹配度占比0%，关键点占比90%，临时关键点占比10%）</span>
+			completionrate = (pathlinerate * <span class="hljs-number">0</span>) + (keyPointScore * <span class="hljs-number">0.9</span>) + (temporaryKeyPointScore * <span class="hljs-number">0.1</span>);
+			
+			<span class="hljs-comment">//巡检完成率为0视为异常数据</span>
+			<span class="hljs-keyword">if</span>(completionrate == <span class="hljs-number">0</span>){
+				<span class="hljs-comment">//保存异常数据</span>
+			}<span class="hljs-keyword">else</span>{
+				<span class="hljs-comment">//保存正常记录</span>
+			}
+			
+			GpsInsScore insscore = <span class="hljs-keyword">new</span> GpsInsScore();
+			<span class="hljs-comment">//统计时间</span>
+			insscore.setStatisticsdate(DateTime.getDateFromDateString(statisticsdate, <span class="hljs-string">"yyyy-MM-dd"</span>));
+			<span class="hljs-comment">//巡检人员</span>
+			insscore.setInspectorid(insoid);
+			<span class="hljs-comment">//设备标识</span>
+			insscore.setDeviceoid(deviceoid);
+			<span class="hljs-comment">//起始位置</span>
+			insscore.setBeginlocation(blocation);
+			<span class="hljs-comment">//结束位置</span>
+			insscore.setEndlocation(elocation);
+			<span class="hljs-comment">//巡线里程</span>
+			insscore.setLinelength(linelength);
+			<span class="hljs-comment">//巡检完成率</span>
+			insscore.setCompletionrate(completionrate);
+			<span class="hljs-comment">//巡检人员类型</span>
+			insscore.setInspectortype(inspectortype);
+			<span class="hljs-comment">//巡检人员部门</span>
+			insscore.setUnitid(unitid);
+			<span class="hljs-comment">//轨迹线匹配度</span>
+			insscore.setPathlinerate(pathlinerate);
+			<span class="hljs-comment">//应巡关键点数</span>
+			insscore.setYkeypointnum(ykeypointnum);
+			<span class="hljs-comment">//实巡关键点数</span>
+			insscore.setSkeypointnum(skeypointnum);
+			<span class="hljs-comment">//应巡临时关键点数</span>
+			insscore.setYtemporarykeypointnum(ytemporarykeypointnum);
+			<span class="hljs-comment">//实巡临时关键点数</span>
+			insscore.setStemporarykeypointnum(stemporarykeypointnum);
+			scoreList.add(insscore);
+		}
+	}
+</div></code></pre>
+
+</body>
+</html>
