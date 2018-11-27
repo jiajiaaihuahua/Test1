@@ -120,12 +120,24 @@
 ```  
 #### 概要  
 + 首先获取顶层部门以及其下的所有子部门，接着删除数据，<span style="color:red">此处需解答,调用的部分写的是删除三天前，实现部分的注释写的是三天内，但是sql中的含义应该是三天之后的所有天数。</span>  
-	- 以参数统计时间为最大时间，依次向前推一天，并且循环所有子部门，利用递归获取到所有部门的分数，关键查询的表是 GPS_INSPECTOR_SCORE。
+	- 以参数统计时间为最大时间，依次向前推一天，并且循环所有子部门，利用递归获取到所有部门的分数，关键查询的表是 GSP_STATION_FSTATISTIC 和 GPS_INSPECTOR_SCORE。
 
 + 巡检计划覆盖率和巡检任务覆盖率计算 ，最后保存在表GSP_STATION_FSTATISTIC中
+	- 通过部门递归获取到所有部门
+	- 通过部门获取到该部门的管理范围，部门管理范围有多条
+	- 循环所有的部门管理范围，通过部门id和范围中的管线id获取到部门以及子孙部门下每条管线的不巡检范围,取相同管线下不巡检范围的并集。
+	- 通过部门id和管线id 获取巡检计划范围,取相同管线下巡检计划范围的并集,去除在巡检计划范围内存在的不巡检范围
+	- 通过部门id和管线id巡检任务范围,取相同管线下巡检任务范围的并集,去除在巡检任务范围内存在的不巡检范围
 	- 代码位置:  
-	>cn.jasgroup.jasframework.statisticsform.PatrolOfficer.service.PatrolOfficerService.java
-	- 覆盖率是根据，每个部门的每条管线的  有生产任务的计划的区段长度/（管理范围长度(GPS_SUBINS)-不巡检范围长度），这是计划覆盖率，任务就换成任务中的区段长度
+	>cn.jasgroup.jasframework.statisticsform.stationfstatistic.service.StationfstatisticService.java
+	- 覆盖率是根据，每个部门的每条管线的  有生产任务的计划的区段长度/（管理范围长度(GPS_SUBINS)-不巡检范围长度），这是计划覆盖率，任务就换成任务中的区段长度  
+	比如，在方法saveStationfstatistic的末尾有一段代码计算了此覆盖率：
+	```java
+	/* 计算巡检计划覆盖率 */
+	plancoveragerate = planlinelength.divide(subinslength.subtract(unsubinslength), 6, BigDecimal.ROUND_HALF_UP);
+	/* 计算巡检任务覆盖率 */
+	taskcoveragerate = instasklength.divide(subinslength.subtract(unsubinslength), 6, BigDecimal.ROUND_HALF_UP);
+	```
 	- 管理范围的长度 = 管理范围终止里程 - 管理范围起始里程
 	- 分别计算出如下3项：
 		- 部门及子孙部门下某一条管线下的不巡检范围
@@ -133,6 +145,7 @@
 		- 部门及子孙部门下某一条管线下在管理范围内的巡检任务范围
 	- 覆盖率是针对于巡线工而言的，管道工是没有覆盖率的。
 	- 覆盖率统计每天定时执行，计算当天任务覆盖率，在任务生成以后进行。
+	- 如果是分公司不查询分公司自己  
 	- 定时执行的巡检覆盖率的大纲方法如下：
 	```java
 	/**
@@ -155,7 +168,110 @@
 		
 	}
 	```
-+ 如果是分公司不查询分公司自己  
+
+	+ 巡检范围 3类，不巡检范围，计划巡检范围以及巡检任务范围，sql如下：
+	```java
+	/**
+	 * 部门及子孙部门下某一条管线下在管理范围内的不巡检范围（仅大、小站）
+	 * @param hierarchy
+	 * @param lineloopoid
+	 * @param statisticsdate
+	 * @return
+	 */
+	public List<GpsUnsubinspection> queryUnSubinspection(String hierarchy, String lineloopoid, String statisticsdate){
+		String sql = "select distinct beginstation,endstation,beginlocation,endlocation from (\n";
+		String subdept_hierarchy = hierarchy.substring(0, hierarchy.lastIndexOf("."));//分公司层级
+		String parent_hierarchy = subdept_hierarchy;//上一级部门层级
+		if(StringUtils.countMatches(hierarchy,".") == 4){//小站
+			subdept_hierarchy = parent_hierarchy.substring(0, parent_hierarchy.lastIndexOf("."));
+		}
+		
+		sql += "select distinct case when t2.beginstation > t1.beginstation then t2.beginstation else t1.beginstation end beginstation,\n" +
+			"case when t2.endstation < t1.endstation then t2.endstation else t1.endstation end endstation,\n" + 
+			"case when t2.beginstation > t1.beginstation then t2.beginlocation else t1.beginlocation end beginlocation,\n" + 
+			"case when t2.endstation < t1.endstation then t2.endlocation else t1.endlocation end endlocation\n" + 
+			"from\n" + 
+			"(select t.* from GPS_UNSUBINSPECTION t\n" + 
+			"inner join pri_unit t1 on t.unitid=t1.oid and t1.active=1 and t1.ispatrol=1 and (t1.hierarchy = '"+subdept_hierarchy+"' or t1.hierarchy = '"+parent_hierarchy+"')\n" + 
+			"and t.lineloopoid='"+lineloopoid+"' and t.active=1\n" + 
+			") t1 inner join\n" + 
+			"(select t1.* from GPS_SUBINS t1 inner join pri_unit t2 on t1.unitid=t2.oid and t2.active=1 where t1.active=1 and t2.hierarchy = '"+hierarchy+"') t2\n" + 
+			"on t2.lineloopoid=t1.lineloopoid\n" + 
+			"where '"+statisticsdate+"' between to_char(t1.begindate,'yyyy-MM-dd') and (case when t1.enddate is null then '9999-12-01' else to_char(t1.enddate,'yyyy-MM-dd') end)\n" + 
+			"and (t1.repealdate is null or '"+statisticsdate+"' < to_char(t1.repealdate,'yyyy-MM-dd'))\n" + 
+			"and (t1.beginstation between t2.beginstation and t2.endstation or t1.endstation between t2.beginstation and t2.endstation)\n" + 
+			"union all\n" + 
+			"select distinct case when t2.beginstation > t.beginstation then t2.beginstation else t.beginstation end beginstation,\n" + 
+			"case when t2.endstation < t.endstation then t2.endstation else t.endstation end endstation,\n" + 
+			"case when t2.beginstation > t.beginstation then t2.beginlocation else t.beginlocation end beginlocation,\n" + 
+			"case when t2.endstation < t.endstation then t2.endlocation else t.endlocation end endlocation\n" + 
+			"from GPS_UNSUBINSPECTION t\n" + 
+			"inner join pri_unit t1 on t.unitid=t1.oid and t1.active=1 and t1.ispatrol=1\n" + 
+			"inner join GPS_SUBINS t2 on t.unitid=t2.unitid and t2.lineloopoid=t.lineloopoid and t2.active=1\n" + 
+			"where t.active=1 and t1.hierarchy like '"+hierarchy+"%' and t.lineloopoid='"+lineloopoid+"'\n" + 
+			"and '"+statisticsdate+"' between to_char(t.begindate,'yyyy-MM-dd') and (case when t.enddate is null then '9999-12-01' else to_char(t.enddate,'yyyy-MM-dd') end)\n" + 
+			"and (t.repealdate is null or '"+statisticsdate+"' < to_char(t.repealdate,'yyyy-MM-dd'))\n" + 
+			"and (t.beginstation between t2.beginstation and t2.endstation or t.endstation between t2.beginstation and t2.endstation)\n";
+		sql += ")order by beginstation";
+		List<GpsUnsubinspection> list = this.baseJdbcTemplate.queryForList(sql, null, GpsUnsubinspection.class);
+		return list;
+	}
+	
+	/**
+	 * 部门及子孙部门下某一条管线下在管理范围内的巡检计划范围
+	 * @param hierarchy
+	 * @param lineloopoid
+	 * @param statisticsdate
+	 * @return
+	 */
+	public List<GpsPlanLineInfo> queryPlanLineInfo(String hierarchy, String lineloopoid, String statisticsdate){
+		String sql = "select distinct case when t3.beginstation > t2.beginstation then t3.beginstation else t2.beginstation end beginstation,\n" +
+					"case when t3.endstation < t2.endstation then t3.endstation else t2.endstation end endstation,\n" + 
+					"case when t3.beginstation > t2.beginstation then t3.beginlocation else t2.beginlocation end beginlocation,\n" + 
+					"case when t3.endstation < t2.endstation then t3.endlocation else t2.endlocation end endlocation\n" + 
+					"from gps_plan_info t\n" + 
+					"inner join gps_plan_line t2 on t.oid=t2.planeventid and t2.active=1\n" + 
+					"inner join gps_instask_day t4 on t.oid=t4.planevoid and t4.active=1\n" + 
+					"inner join pri_unit t1 on t4.execunitid=t1.oid and t1.active=1 and t1.ispatrol=1\n" + 
+					"inner join GPS_SUBINS t3 on t4.execunitid=t3.unitid and t3.lineloopoid=t2.lineloopoid and t3.active=1\n" + 
+					"where t.active=1 and t.planflag='01' and t.inspectortype='01' and t1.hierarchy like '"+hierarchy+"%'\n" + 
+					"and t2.lineloopoid='"+lineloopoid+"'\n" + 
+					"and '"+statisticsdate+"' between to_char(t.insbdate,'yyyy-MM-dd') and (case when t.insedate is null then '9999-12-01' else to_char(t.insedate,'yyyy-MM-dd') end)\n" + 
+					"and (t.repealdate is null or '"+statisticsdate+"' < to_char(t.repealdate,'yyyy-MM-dd'))\n" + 
+					"and (t2.beginstation between t3.beginstation and t3.endstation or t2.endstation between t3.beginstation and t3.endstation\n" + 
+					"or t3.beginstation between t2.beginstation and t2.endstation or t3.endstation between t2.beginstation and t2.endstation)\n" + 
+					"order by case when t3.beginstation > t2.beginstation then t3.beginstation else t2.beginstation end";
+		List<GpsPlanLineInfo> list = this.baseJdbcTemplate.queryForList(sql, null, GpsPlanLineInfo.class);
+		return list;
+	}
+	
+	/**
+	 * 部门及子孙部门下某一条管线下在管理范围内的巡检任务范围
+	 * @param hierarchy
+	 * @param lineloopoid
+	 * @param statisticsdate
+	 * @return
+	 */
+	public List<GpsInstaskDayLine> queryInstask(String hierarchy, String lineloopoid, String statisticsdate){
+		String sql = "select distinct case when t3.beginstation > t2.beginstation then t3.beginstation else t2.beginstation end beginstation,\n" +
+					"case when t3.endstation < t2.endstation then t3.endstation else t2.endstation end endstation,\n" + 
+					"case when t3.beginstation > t2.beginstation then t3.beginlocation else t2.beginlocation end beginlocation,\n" + 
+					"case when t3.endstation < t2.endstation then t3.endlocation else t2.endlocation end endlocation\n" + 
+					"from gps_instask_day t\n" + 
+					"inner join pri_unit t1 on t.execunitid=t1.oid and t1.active=1 and t1.ispatrol=1\n" + 
+					"inner join gps_instask_day_line t2 on t.oid=t2.instaskoid and t2.active=1\n" + 
+					"inner join GPS_SUBINS t3 on t.execunitid=t3.unitid and t3.lineloopoid=t2.lineloopoid and t3.active=1\n" + 
+					"where t.active=1 and t.inspectortype='01' and t1.hierarchy like '"+hierarchy+"%' and t2.lineloopoid='"+lineloopoid+"'\n" + 
+					"and '"+statisticsdate+"' between to_char(t.insbdate,'yyyy-MM-dd') and to_char(t.insedate,'yyyy-MM-dd')\n" + 
+					"and (t2.beginstation between t3.beginstation and t3.endstation or t2.endstation between t3.beginstation and t3.endstation)\n" + 
+					"order by case when t3.beginstation > t2.beginstation then t3.beginstation else t2.beginstation end";
+		List<GpsInstaskDayLine> list = this.baseJdbcTemplate.queryForList(sql, null, GpsInstaskDayLine.class);
+		return list;
+	}
+	```
++ 获取场站分数是查询表 GPS_INSPECTOR_SCORE，具体涉及的分数有，巡检完成率,考核分数,应巡关键点数,实巡关键点数,应巡临时关键点数,实巡临时关键点数,轨迹线匹配度.
+	- 分公司的分数是场站分数汇总后的平均值。
+	- GPS_INSPECTOR_SCORE 是如何生成的呢，具体参考巡线工考核报表。
 
 
 

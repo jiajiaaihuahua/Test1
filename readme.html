@@ -520,19 +520,32 @@ cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreSer
 <li>
 <p>首先获取顶层部门以及其下的所有子部门，接着删除数据，<span style="color:red">此处需解答,调用的部分写的是删除三天前，实现部分的注释写的是三天内，但是sql中的含义应该是三天之后的所有天数。</span></p>
 <ul>
-<li>以参数统计时间为最大时间，依次向前推一天，并且循环所有子部门，利用递归获取到所有部门的分数，关键查询的表是 GPS_INSPECTOR_SCORE。</li>
+<li>以参数统计时间为最大时间，依次向前推一天，并且循环所有子部门，利用递归获取到所有部门的分数，关键查询的表是 GSP_STATION_FSTATISTIC 和 GPS_INSPECTOR_SCORE。</li>
 </ul>
 </li>
 <li>
 <p>巡检计划覆盖率和巡检任务覆盖率计算 ，最后保存在表GSP_STATION_FSTATISTIC中</p>
 <ul>
+<li>通过部门递归获取到所有部门</li>
+<li>通过部门获取到该部门的管理范围，部门管理范围有多条</li>
+<li>循环所有的部门管理范围，通过部门id和范围中的管线id获取到部门以及子孙部门下每条管线的不巡检范围,取相同管线下不巡检范围的并集。</li>
+<li>通过部门id和管线id 获取巡检计划范围,取相同管线下巡检计划范围的并集,去除在巡检计划范围内存在的不巡检范围</li>
+<li>通过部门id和管线id巡检任务范围,取相同管线下巡检任务范围的并集,去除在巡检任务范围内存在的不巡检范围</li>
 <li>代码位置:</li>
 </ul>
 <blockquote>
-<p>cn.jasgroup.jasframework.statisticsform.PatrolOfficer.service.PatrolOfficerService.java</p>
+<p>cn.jasgroup.jasframework.statisticsform.stationfstatistic.service.StationfstatisticService.java</p>
 </blockquote>
 <ul>
-<li>覆盖率是根据，每个部门的每条管线的  有生产任务的计划的区段长度/（管理范围长度(GPS_SUBINS)-不巡检范围长度），这是计划覆盖率，任务就换成任务中的区段长度</li>
+<li>覆盖率是根据，每个部门的每条管线的  有生产任务的计划的区段长度/（管理范围长度(GPS_SUBINS)-不巡检范围长度），这是计划覆盖率，任务就换成任务中的区段长度<br>
+比如，在方法saveStationfstatistic的末尾有一段代码计算了此覆盖率：</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-comment">/* 计算巡检计划覆盖率 */</span>
+plancoveragerate = planlinelength.divide(subinslength.subtract(unsubinslength), <span class="hljs-number">6</span>, BigDecimal.ROUND_HALF_UP);
+<span class="hljs-comment">/* 计算巡检任务覆盖率 */</span>
+taskcoveragerate = instasklength.divide(subinslength.subtract(unsubinslength), <span class="hljs-number">6</span>, BigDecimal.ROUND_HALF_UP);
+</div></code></pre>
+<ul>
 <li>管理范围的长度 = 管理范围终止里程 - 管理范围起始里程</li>
 <li>分别计算出如下3项：
 <ul>
@@ -543,6 +556,7 @@ cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreSer
 </li>
 <li>覆盖率是针对于巡线工而言的，管道工是没有覆盖率的。</li>
 <li>覆盖率统计每天定时执行，计算当天任务覆盖率，在任务生成以后进行。</li>
+<li>如果是分公司不查询分公司自己</li>
 <li>定时执行的巡检覆盖率的大纲方法如下：</li>
 </ul>
 <pre class="hljs"><code><div><span class="hljs-comment">/**
@@ -565,9 +579,114 @@ cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreSer
 	
 }
 </div></code></pre>
+<ul>
+<li>巡检范围 3类，不巡检范围，计划巡检范围以及巡检任务范围，sql如下：</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-comment">/**
+ * 部门及子孙部门下某一条管线下在管理范围内的不巡检范围（仅大、小站）
+ * <span class="hljs-doctag">@param</span> hierarchy
+ * <span class="hljs-doctag">@param</span> lineloopoid
+ * <span class="hljs-doctag">@param</span> statisticsdate
+ * <span class="hljs-doctag">@return</span>
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> List&lt;GpsUnsubinspection&gt; <span class="hljs-title">queryUnSubinspection</span><span class="hljs-params">(String hierarchy, String lineloopoid, String statisticsdate)</span></span>{
+	String sql = <span class="hljs-string">"select distinct beginstation,endstation,beginlocation,endlocation from (\n"</span>;
+	String subdept_hierarchy = hierarchy.substring(<span class="hljs-number">0</span>, hierarchy.lastIndexOf(<span class="hljs-string">"."</span>));<span class="hljs-comment">//分公司层级</span>
+	String parent_hierarchy = subdept_hierarchy;<span class="hljs-comment">//上一级部门层级</span>
+	<span class="hljs-keyword">if</span>(StringUtils.countMatches(hierarchy,<span class="hljs-string">"."</span>) == <span class="hljs-number">4</span>){<span class="hljs-comment">//小站</span>
+		subdept_hierarchy = parent_hierarchy.substring(<span class="hljs-number">0</span>, parent_hierarchy.lastIndexOf(<span class="hljs-string">"."</span>));
+	}
+	
+	sql += <span class="hljs-string">"select distinct case when t2.beginstation &gt; t1.beginstation then t2.beginstation else t1.beginstation end beginstation,\n"</span> +
+		<span class="hljs-string">"case when t2.endstation &lt; t1.endstation then t2.endstation else t1.endstation end endstation,\n"</span> + 
+		<span class="hljs-string">"case when t2.beginstation &gt; t1.beginstation then t2.beginlocation else t1.beginlocation end beginlocation,\n"</span> + 
+		<span class="hljs-string">"case when t2.endstation &lt; t1.endstation then t2.endlocation else t1.endlocation end endlocation\n"</span> + 
+		<span class="hljs-string">"from\n"</span> + 
+		<span class="hljs-string">"(select t.* from GPS_UNSUBINSPECTION t\n"</span> + 
+		<span class="hljs-string">"inner join pri_unit t1 on t.unitid=t1.oid and t1.active=1 and t1.ispatrol=1 and (t1.hierarchy = '"</span>+subdept_hierarchy+<span class="hljs-string">"' or t1.hierarchy = '"</span>+parent_hierarchy+<span class="hljs-string">"')\n"</span> + 
+		<span class="hljs-string">"and t.lineloopoid='"</span>+lineloopoid+<span class="hljs-string">"' and t.active=1\n"</span> + 
+		<span class="hljs-string">") t1 inner join\n"</span> + 
+		<span class="hljs-string">"(select t1.* from GPS_SUBINS t1 inner join pri_unit t2 on t1.unitid=t2.oid and t2.active=1 where t1.active=1 and t2.hierarchy = '"</span>+hierarchy+<span class="hljs-string">"') t2\n"</span> + 
+		<span class="hljs-string">"on t2.lineloopoid=t1.lineloopoid\n"</span> + 
+		<span class="hljs-string">"where '"</span>+statisticsdate+<span class="hljs-string">"' between to_char(t1.begindate,'yyyy-MM-dd') and (case when t1.enddate is null then '9999-12-01' else to_char(t1.enddate,'yyyy-MM-dd') end)\n"</span> + 
+		<span class="hljs-string">"and (t1.repealdate is null or '"</span>+statisticsdate+<span class="hljs-string">"' &lt; to_char(t1.repealdate,'yyyy-MM-dd'))\n"</span> + 
+		<span class="hljs-string">"and (t1.beginstation between t2.beginstation and t2.endstation or t1.endstation between t2.beginstation and t2.endstation)\n"</span> + 
+		<span class="hljs-string">"union all\n"</span> + 
+		<span class="hljs-string">"select distinct case when t2.beginstation &gt; t.beginstation then t2.beginstation else t.beginstation end beginstation,\n"</span> + 
+		<span class="hljs-string">"case when t2.endstation &lt; t.endstation then t2.endstation else t.endstation end endstation,\n"</span> + 
+		<span class="hljs-string">"case when t2.beginstation &gt; t.beginstation then t2.beginlocation else t.beginlocation end beginlocation,\n"</span> + 
+		<span class="hljs-string">"case when t2.endstation &lt; t.endstation then t2.endlocation else t.endlocation end endlocation\n"</span> + 
+		<span class="hljs-string">"from GPS_UNSUBINSPECTION t\n"</span> + 
+		<span class="hljs-string">"inner join pri_unit t1 on t.unitid=t1.oid and t1.active=1 and t1.ispatrol=1\n"</span> + 
+		<span class="hljs-string">"inner join GPS_SUBINS t2 on t.unitid=t2.unitid and t2.lineloopoid=t.lineloopoid and t2.active=1\n"</span> + 
+		<span class="hljs-string">"where t.active=1 and t1.hierarchy like '"</span>+hierarchy+<span class="hljs-string">"%' and t.lineloopoid='"</span>+lineloopoid+<span class="hljs-string">"'\n"</span> + 
+		<span class="hljs-string">"and '"</span>+statisticsdate+<span class="hljs-string">"' between to_char(t.begindate,'yyyy-MM-dd') and (case when t.enddate is null then '9999-12-01' else to_char(t.enddate,'yyyy-MM-dd') end)\n"</span> + 
+		<span class="hljs-string">"and (t.repealdate is null or '"</span>+statisticsdate+<span class="hljs-string">"' &lt; to_char(t.repealdate,'yyyy-MM-dd'))\n"</span> + 
+		<span class="hljs-string">"and (t.beginstation between t2.beginstation and t2.endstation or t.endstation between t2.beginstation and t2.endstation)\n"</span>;
+	sql += <span class="hljs-string">")order by beginstation"</span>;
+	List&lt;GpsUnsubinspection&gt; list = <span class="hljs-keyword">this</span>.baseJdbcTemplate.queryForList(sql, <span class="hljs-keyword">null</span>, GpsUnsubinspection.class);
+	<span class="hljs-keyword">return</span> list;
+}
+
+<span class="hljs-comment">/**
+ * 部门及子孙部门下某一条管线下在管理范围内的巡检计划范围
+ * <span class="hljs-doctag">@param</span> hierarchy
+ * <span class="hljs-doctag">@param</span> lineloopoid
+ * <span class="hljs-doctag">@param</span> statisticsdate
+ * <span class="hljs-doctag">@return</span>
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> List&lt;GpsPlanLineInfo&gt; <span class="hljs-title">queryPlanLineInfo</span><span class="hljs-params">(String hierarchy, String lineloopoid, String statisticsdate)</span></span>{
+	String sql = <span class="hljs-string">"select distinct case when t3.beginstation &gt; t2.beginstation then t3.beginstation else t2.beginstation end beginstation,\n"</span> +
+				<span class="hljs-string">"case when t3.endstation &lt; t2.endstation then t3.endstation else t2.endstation end endstation,\n"</span> + 
+				<span class="hljs-string">"case when t3.beginstation &gt; t2.beginstation then t3.beginlocation else t2.beginlocation end beginlocation,\n"</span> + 
+				<span class="hljs-string">"case when t3.endstation &lt; t2.endstation then t3.endlocation else t2.endlocation end endlocation\n"</span> + 
+				<span class="hljs-string">"from gps_plan_info t\n"</span> + 
+				<span class="hljs-string">"inner join gps_plan_line t2 on t.oid=t2.planeventid and t2.active=1\n"</span> + 
+				<span class="hljs-string">"inner join gps_instask_day t4 on t.oid=t4.planevoid and t4.active=1\n"</span> + 
+				<span class="hljs-string">"inner join pri_unit t1 on t4.execunitid=t1.oid and t1.active=1 and t1.ispatrol=1\n"</span> + 
+				<span class="hljs-string">"inner join GPS_SUBINS t3 on t4.execunitid=t3.unitid and t3.lineloopoid=t2.lineloopoid and t3.active=1\n"</span> + 
+				<span class="hljs-string">"where t.active=1 and t.planflag='01' and t.inspectortype='01' and t1.hierarchy like '"</span>+hierarchy+<span class="hljs-string">"%'\n"</span> + 
+				<span class="hljs-string">"and t2.lineloopoid='"</span>+lineloopoid+<span class="hljs-string">"'\n"</span> + 
+				<span class="hljs-string">"and '"</span>+statisticsdate+<span class="hljs-string">"' between to_char(t.insbdate,'yyyy-MM-dd') and (case when t.insedate is null then '9999-12-01' else to_char(t.insedate,'yyyy-MM-dd') end)\n"</span> + 
+				<span class="hljs-string">"and (t.repealdate is null or '"</span>+statisticsdate+<span class="hljs-string">"' &lt; to_char(t.repealdate,'yyyy-MM-dd'))\n"</span> + 
+				<span class="hljs-string">"and (t2.beginstation between t3.beginstation and t3.endstation or t2.endstation between t3.beginstation and t3.endstation\n"</span> + 
+				<span class="hljs-string">"or t3.beginstation between t2.beginstation and t2.endstation or t3.endstation between t2.beginstation and t2.endstation)\n"</span> + 
+				<span class="hljs-string">"order by case when t3.beginstation &gt; t2.beginstation then t3.beginstation else t2.beginstation end"</span>;
+	List&lt;GpsPlanLineInfo&gt; list = <span class="hljs-keyword">this</span>.baseJdbcTemplate.queryForList(sql, <span class="hljs-keyword">null</span>, GpsPlanLineInfo.class);
+	<span class="hljs-keyword">return</span> list;
+}
+
+<span class="hljs-comment">/**
+ * 部门及子孙部门下某一条管线下在管理范围内的巡检任务范围
+ * <span class="hljs-doctag">@param</span> hierarchy
+ * <span class="hljs-doctag">@param</span> lineloopoid
+ * <span class="hljs-doctag">@param</span> statisticsdate
+ * <span class="hljs-doctag">@return</span>
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> List&lt;GpsInstaskDayLine&gt; <span class="hljs-title">queryInstask</span><span class="hljs-params">(String hierarchy, String lineloopoid, String statisticsdate)</span></span>{
+	String sql = <span class="hljs-string">"select distinct case when t3.beginstation &gt; t2.beginstation then t3.beginstation else t2.beginstation end beginstation,\n"</span> +
+				<span class="hljs-string">"case when t3.endstation &lt; t2.endstation then t3.endstation else t2.endstation end endstation,\n"</span> + 
+				<span class="hljs-string">"case when t3.beginstation &gt; t2.beginstation then t3.beginlocation else t2.beginlocation end beginlocation,\n"</span> + 
+				<span class="hljs-string">"case when t3.endstation &lt; t2.endstation then t3.endlocation else t2.endlocation end endlocation\n"</span> + 
+				<span class="hljs-string">"from gps_instask_day t\n"</span> + 
+				<span class="hljs-string">"inner join pri_unit t1 on t.execunitid=t1.oid and t1.active=1 and t1.ispatrol=1\n"</span> + 
+				<span class="hljs-string">"inner join gps_instask_day_line t2 on t.oid=t2.instaskoid and t2.active=1\n"</span> + 
+				<span class="hljs-string">"inner join GPS_SUBINS t3 on t.execunitid=t3.unitid and t3.lineloopoid=t2.lineloopoid and t3.active=1\n"</span> + 
+				<span class="hljs-string">"where t.active=1 and t.inspectortype='01' and t1.hierarchy like '"</span>+hierarchy+<span class="hljs-string">"%' and t2.lineloopoid='"</span>+lineloopoid+<span class="hljs-string">"'\n"</span> + 
+				<span class="hljs-string">"and '"</span>+statisticsdate+<span class="hljs-string">"' between to_char(t.insbdate,'yyyy-MM-dd') and to_char(t.insedate,'yyyy-MM-dd')\n"</span> + 
+				<span class="hljs-string">"and (t2.beginstation between t3.beginstation and t3.endstation or t2.endstation between t3.beginstation and t3.endstation)\n"</span> + 
+				<span class="hljs-string">"order by case when t3.beginstation &gt; t2.beginstation then t3.beginstation else t2.beginstation end"</span>;
+	List&lt;GpsInstaskDayLine&gt; list = <span class="hljs-keyword">this</span>.baseJdbcTemplate.queryForList(sql, <span class="hljs-keyword">null</span>, GpsInstaskDayLine.class);
+	<span class="hljs-keyword">return</span> list;
+}
+</div></code></pre>
 </li>
 <li>
-<p>如果是分公司不查询分公司自己</p>
+<p>获取场站分数是查询表 GPS_INSPECTOR_SCORE，具体涉及的分数有，巡检完成率,考核分数,应巡关键点数,实巡关键点数,应巡临时关键点数,实巡临时关键点数,轨迹线匹配度.</p>
+<ul>
+<li>分公司的分数是场站分数汇总后的平均值。</li>
+<li>GPS_INSPECTOR_SCORE 是如何生成的呢，具体参考巡线工考核报表。</li>
+</ul>
 </li>
 </ul>
 <h3 id="%E5%B7%A1%E7%BA%BF%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8"><code>巡线工考核报表</code></h3>
