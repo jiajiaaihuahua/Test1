@@ -500,8 +500,35 @@
 		}
 	}
 ```  
+## **定时器**
+<hr>  
+
+1. 同步异常处理结果定时器  
+	SyncErrorRecordService 
 	
+2. 删除管道工巡检区段定时器
+	cn.jasgroup.jasframework.linepatrolmanage.subsystem.insrangemanage.service.GpsInsrangeService void deleteGInsrange()
+3. 生成巡检任务定时器
+	* 根据巡检计划生成管道工巡检任务和巡线工巡检任务
+		* cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask();
+	* 生成临时任务
+		* cn.jasgroup.jasframework.linepatrolmanage.instask.temporarytask.service.GpsTemporaryTaskService void generateTemporaryTask();
+4. 同步系统集成号定时器
+	* cn.jasgroup.jasframework.piswebserviceutil下的所有方法
+5. 统计报表定时器  
+	* 巡线工分数统计
+		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScore();
+	* 管道工分数统计
+		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreG();
+	* 部门分数统计
+		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreUnit();
 
+## **巡检计划**
+<hr/>  
 
-  
+### 巡检计划定时生成巡检任务    
+1. 代码位置：  
+>cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask( String inspectortype );   
+参数   
+    inspectortype : 01:巡线工，02：管道工。 
 
