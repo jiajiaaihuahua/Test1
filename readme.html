@@ -949,6 +949,70 @@ taskcoveragerate = instasklength.divide(subinslength.subtract(unsubinslength), <
 		}
 	}
 </div></code></pre>
+<h2 id="%E5%AE%9A%E6%97%B6%E5%99%A8"><strong>定时器</strong></h2>
+<hr>  
+<ol>
+<li>
+<p>同步异常处理结果定时器<br>
+SyncErrorRecordService</p>
+</li>
+<li>
+<p>删除管道工巡检区段定时器
+cn.jasgroup.jasframework.linepatrolmanage.subsystem.insrangemanage.service.GpsInsrangeService void deleteGInsrange()</p>
+</li>
+<li>
+<p>生成巡检任务定时器</p>
+<ul>
+<li>根据巡检计划生成管道工巡检任务和巡线工巡检任务
+<ul>
+<li>cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask();</li>
+</ul>
+</li>
+<li>生成临时任务
+<ul>
+<li>cn.jasgroup.jasframework.linepatrolmanage.instask.temporarytask.service.GpsTemporaryTaskService void generateTemporaryTask();</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>同步系统集成号定时器</p>
+<ul>
+<li>cn.jasgroup.jasframework.piswebserviceutil下的所有方法</li>
+</ul>
+</li>
+<li>
+<p>统计报表定时器</p>
+<ul>
+<li>巡线工分数统计
+<ul>
+<li>cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScore();</li>
+</ul>
+</li>
+<li>管道工分数统计
+<ul>
+<li>cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreG();</li>
+</ul>
+</li>
+<li>部门分数统计
+<ul>
+<li>cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreUnit();</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="%E5%B7%A1%E6%A3%80%E8%AE%A1%E5%88%92"><strong>巡检计划</strong></h2>
+<hr/>  
+<h3 id="%E5%B7%A1%E6%A3%80%E8%AE%A1%E5%88%92%E5%AE%9A%E6%97%B6%E7%94%9F%E6%88%90%E5%B7%A1%E6%A3%80%E4%BB%BB%E5%8A%A1">巡检计划定时生成巡检任务</h3>
+<ol>
+<li>代码位置：</li>
+</ol>
+<blockquote>
+<p>cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask( String inspectortype );<br>
+参数<br>
+inspectortype : 01:巡线工，02：管道工。</p>
+</blockquote>
 
 </body>
 </html>
