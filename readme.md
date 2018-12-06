@@ -113,7 +113,7 @@
 ## **考核报表**
 <hr>  
 
-![](./windy.gif =100x200)
+![](http://d.hiphotos.baidu.com/image/pic/item/91ef76c6a7efce1b5ef04082a251f3deb58f659b.jpg =100x200)
 ### `综合评分计算说明  `
 1. 分公司各站平均分数，得分四舍五入保留整数；
 2. 红色警告：巡检完成率低于80%，需重点监察；
