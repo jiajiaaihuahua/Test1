@@ -1,7 +1,46 @@
 # **西南巡检项目说明书**
-`此为我对西南巡检通过代码和沟通方式得到的汇总文档。`
+`此为我对西南巡检通过代码和沟通方式得到的汇总文档。`   
+
+ ## **通用**  
+ <hr/>
+
+ * 表单数据权限过滤，获取登陆用户的部门以及本部门下的所有数据。   
+ ```java
+ 	/* 获取该层级下面所有的数据（包括本层级）*/
+		if(StringUtils.isNotBlank(hierarchy)){
+			sql+=" and u.hierarchy like :hierarchy";
+		}
+ ```  
+ * 管道处拥有上级部门的权限，能看到上级部门的信息。   
+	* 相关类：XnCommonService
+ ```java
+    /**
+	 * 
+	 * 判断传入部门或当前登陆部门，如果是管道处/科 则返回上级部门对象,否则返回当前部门对象
+	 * @param unitid
+	 *        部门标识
+	 */
+	public SyncUnitBo isPipeOffice(String unitid){
+		SyncUnitBo unitBo = null;
+		
+		/* 如果传入部门id为空，获取当前用户的所属部门编号 */
+		if(StringUtils.isBlank(unitid) || "null".equals(unitid)) {
+			/* 获取当前用户所属的部门id */
+			unitid = ThreadLocalHolder.getCurrentUser().getUnitId();
+		}
+		
+		unitBo = syncDeptUserService.getUnitBoByOid(unitid);
+		
+		//判断是否为管道处/科
+		if("1".equals(unitBo.getIsPipeOffice())){
+			//如果是管道处/科 获取上级部门对象
+			unitBo = syncDeptUserService.getUnitBoByOid(unitBo.getParentId());
+		}
+		return unitBo;
+	}
+ ```
  ## **PIS对接**
- <hr>  
+ <hr/>  
 
 1. 代码位置,PIS同步使用webservice，客户端所需JAR包位置在WEB-INF/lib下。  
    >cn.jasgroup.jasframework.piswebserviceutil
@@ -74,6 +113,7 @@
 ## **考核报表**
 <hr>  
 
+![](./windy.gif =100x200)
 ### `综合评分计算说明  `
 1. 分公司各站平均分数，得分四舍五入保留整数；
 2. 红色警告：巡检完成率低于80%，需重点监察；
@@ -272,12 +312,23 @@
 + 获取场站分数是查询表 GPS_INSPECTOR_SCORE，具体涉及的分数有，巡检完成率,考核分数,应巡关键点数,实巡关键点数,应巡临时关键点数,实巡临时关键点数,轨迹线匹配度.
 	- 分公司的分数是场站分数汇总后的平均值。
 	- GPS_INSPECTOR_SCORE 是如何生成的呢，具体参考巡线工考核报表。
-
++ 登录分数，顾名思义，就是一周内人员的登录次数越多，分数越高。
++ 场站分数（ 分数计算中，场站包含自身，分公司不包含自己 ）
+	- 获取部门的场站下的人员的所有平均分数。
+	- 巡检完成率，所有人员的分数综合 / 人员总数 
+	- 考核分数 
+	- 应巡关键点数
+	- 实巡关键点数
+	- 应巡临时关键点数
+	- 实巡临时关键点数
+	- 轨迹线匹配度
+	- 如果是巡线工，需要取出巡检计划覆盖率和巡检任务覆盖率
 
 
 ### `巡线工考核报表`   
 测试更新
 ### `管道工考核报表`   
+管道工只按周统计，不按照日统计
 >管道工统计是一个定时任务，代码位置：cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreService.java 中的statisticsScoreG 方法。只需执行此方法就可以吧统计完的数据存在表gps_inspector_score中。   
 ```java
 	/*************************************************管道工统计 开始*******************************************************/
@@ -317,10 +368,10 @@
 	- 根据部门获取到该部门的缓冲带宽度。（缓冲带宽度涉及的表gps_buffer_width）
 	- 按照统计时间，部门ID和部门缓冲范围获取该部门下的所有管道工人员
 	+ 计算每位管道工人员的分数
-		- 通过调用queryLineLocation方法获取到该人员的所有得分情况
+		- 通过调用 queryLineLocation 方法获取到该人员的所有得分情况
 		- 将每位管道工人员的得分情况保存到表gps_inspector_score中
 
-#### 具体实现步奏
+#### 具体实现步奏 queryLineLocation
 + 获取管道工人员的考核分数关键性代码如下。
 1. `关键步奏就是获取到此人的巡检任务，巡检任务中包含了巡检时间和巡检关键点信息，因为巡检时间和巡检关键点都是分开表存储，所以取值的时候有点麻烦。  `  
 + 获取每个人员的巡检任务 （巡检任务表 gps_instask_day ）  
@@ -335,15 +386,15 @@
 6. `计算轨迹线的匹配度`  
 + 通过任务管线的集合获取到标准的轨迹线点
 	- 通过管线ID和巡检人员ID获取到巡检管线上的所有关键点。（ 涉及的表有GPS_PATHLINE_MAIN, GPS_PATHLINE_XYPOINT ）  
-	- 拼接标准轨迹线点转换成线对象 [Polyline](http://desktop.arcgis.com/zh-cn/arcmap/10.3/analyze/arcpy-classes/polyline.htm)  
+	- 拼接标准轨迹线点转换成线对象 [Polyline](http://desktop.arcgis.com/zh-cn/arcmap/10.3/analyze/arcpy-classes/polyline.htm)  （ 此过程在APP完成 ）  
 	- 通过调用我们系统封装的lengthRadioOfIntersectedPaths 方法 传入标准轨迹线和巡检gps轨迹线的线对象以及缓冲区的宽度，得到轨迹线与标准轨迹线缓冲区轨迹重叠的长度占比.
-	 	- 首先要根据人员和管线获取到该人员要巡检的标准管线点。
-		- 根据任务的时间分别获取到不同的时间段内人员巡检的实际轨迹线。
+	 	- 首先要根据人员和管线获取到该人员要巡检的标准管线点。（ 标准轨迹线由APP录入，管道工配置。）
+		- 根据任务的时间分别获取到不同的时间段内人员巡检的实际轨迹线。（ 一天3巡，就会有3条实际轨迹线 ）
 		- 通过任务时间段内，此人员的实际轨迹线和标准轨迹线通过arcgis服务提供的方法计算出重叠的长度占比。( 多天一巡和一天多巡的方式有点区别。但是最后得到的占比是相对于每一条管线的。)
 
-		<span style = 'color:red'>注意：此处代码需要验证，如果是一天多巡，就是每个时间段计算一次标准轨迹点与实际巡检轨迹点的匹配度，然后最终的匹配度是除以巡检时间的数量取平均值；如果是多天一巡，就把该时间段内的所有巡检点组成一条线对象，最终计算与标准轨迹线的匹配度，多天一巡匹配度的计算需要奎斌解答。</span>
+		* 如果是一天多巡，就是每个时间段计算一次标准轨迹点与实际巡检轨迹点的匹配度，然后最终的匹配度是除以巡检时间的数量取平均值；如果是多天一巡，就把该时间段内的所有巡检点组成一条线对象，最终计算与标准轨迹线的匹配度。
 ```java
-/**
+	/**
 	 * 获取巡检人员 考核数据
 	 *  @param statisticsdate 统计日期
 	 *  @param insoid 巡检人员
@@ -507,7 +558,8 @@
 	SyncErrorRecordService 
 	
 2. 删除管道工巡检区段定时器
-	cn.jasgroup.jasframework.linepatrolmanage.subsystem.insrangemanage.service.GpsInsrangeService void deleteGInsrange()
+	* 目的：让他们重新分区段，每周划分一次。
+	* cn.jasgroup.jasframework.linepatrolmanage.subsystem.insrangemanage.service.GpsInsrangeService void deleteGInsrange()
 3. 生成巡检任务定时器
 	* 根据巡检计划生成管道工巡检任务和巡线工巡检任务
 		* cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask();
@@ -521,14 +573,158 @@
 	* 管道工分数统计
 		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreG();
 	* 部门分数统计
-		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreUnit();
-
+		* cn.jasgroup.jasframework.linepatrolmanage.assessments.StatisticsScoreService void statisticsScoreUnit();  
+6. 巡检gps轨迹点存空间数据定时器  
+	* 这个是每天巡的实际轨迹线
+	* PatrolxyService.savePatrolxyLine();
+	
+7. 巡检覆盖率统计定时器  
+	* StationfstatisticService.saveStationfstatistic();
+8. 巡检记录上传定时器  
+	* PisWebServiceUtil.UploadInspectionRecordFull();
+9. 巡检异常上传定时器  
+	* PisWebServiceUtil.UploadUnInspectionRecord();  
+10. 用户同步定时器（无先后顺序）
+	* PisWebServiceUtil.syncPisUser();
 ## **巡检计划**
-<hr/>  
+<hr/>
+
+### 巡检计划只会是一根管线内。 
+
+### 巡检计划情况分析  
+```mermaid
+graph LR  
+	A1--这是一条管线--> B1
+```
+`---------------------------------------------------------------------`   
+ |    |  
+ A    B 
 
 ### 巡检计划定时生成巡检任务    
+-- 本部门计划，本部门以上的所有计划。 跟当前部门的某一个人去匹配。
+巡检人员任务取巡检人员区段与计划范围中计划和区段交集内的关键点。
 1. 代码位置：  
 >cn.jasgroup.jasframework.linepatrolmanage.instask.instaskday.service.GpsInstaskDayService void doInstask( String inspectortype );   
 参数   
     inspectortype : 01:巡线工，02：管道工。 
+2. 根据人员类型，获取管道工和巡线工的巡检区段与巡检人员。（区段表：gps_insrange,巡线人员表：gps_inspector，巡线人员的设备ID不能为null，也就是必须要绑定设备。）  
+3. 循环所有区段以及人员，根据人员以及区段管线等信息匹配计划。  
+4. 如果是巡线工，根据计划生成任务集合  
+5. 如果是管道工，管道工生成任务是否开启匹配计划默认为真  
+	* 如果管道工生成任务是否开启匹配计划为真
+		* 如果管道工当前区段没有能匹配计划，按照管道工设置的巡检时间直接生成任务  
+		* 可以匹配计划，就根据计划生成任务。  
+	* 如果管道工生成任务是否开启匹配计划为假
+		* 管道工按照默认的一周一巡日巡生成任务
+6. 根据人员区段管线等信息匹配计划（ 涉及的视图 gps_instask_planline ），得到匹配好的计划，此时获取到的实体GpsInstaskDayBo 中的信息是巡检计划的信息；  
+7. 相同管线、起止里程的数据仅保留最新一条巡检计划数据  
+8. 得到了所有有效的巡检计划之后，循环所有的有效巡检计划  
+	* 通过部门，管线，起始里程，终止里程，日期 查询到所有的关键点
+	* 如果已经存在任务，不再生成重复任务。
+	* setInstaskPlanLineList 目的为了获取到有效的所有巡检计划。
+	* saveInstaskPlan 通过巡检计算保存巡检任务
+9. 任务线路字表中起始里程和终止里程表示的是任务在这条线路上的起始里程和终止里程，并不是整条线路的起始里程和终止里程。
+10. 		
+> insfrequnitval ,巡检频次单位值   （ 天/周/月/年 ）  
+> insfreq 巡检频次值  
+> insfrequnit 巡检频次单位  
+> 日巡时间 06:00 - 20：00  
+> 夜巡    20：00 - 06：00   
+11. 巡检时间分配：  
+	+ 一天N巡检，就把巡检时间分为N等分，然后保存任务巡检时间（gps_instask_day_line_time）和 任务巡检点表（gps_instask_day_point）
+	+ N天一巡 ， 例如2天一巡，今天2018-11-30生成任务，则生成一条任务，任务开始时间为今天2018-11-30，结束时间是2018-12-01，巡检任务时间分为两个部分，1）开始时间点: 2018-11-30 06:00:00   2）结束时间点: 2018-11-30 20:00:00，开始时间点: 2018-12-01 06:00:00   结束时间点: 2018-12-01 20:00:00   
+	+ 周，月，年暂没做处理。
+
+12. 巡检计划和巡检任务相关表。
+13. 如果计划跨越区段，还是只生成一条任务，但是任务的线路表会有两条记录。
+```sql
+select * from GPS_PLAN_INFO;
+select * from GPS_PLAN_LINE;
+select * from GPS_INSTASK_DAY;
+select * from GPS_INSTASK_DAY_LINE;
+select * from GPS_INSTASK_DAY_LINE_TIME;
+select * from GPS_INSTASK_DAY_POINT;
+
+select * from GPS_PLAN_INFO;
+select * from GPS_PLAN_LINE where PLANEVENTID = 'ff4d03d0-4aa7-11e6-9a3b-e41f13e34d74' ;  
+select * from GPS_INSTASK_DAY;
+select * from GPS_INSTASK_DAY_LINE;
+select * from GPS_INSTASK_DAY_LINE_TIME;
+select * from GPS_INSTASK_DAY_POINT;
+
+delete from GPS_PLAN_INFO ;
+delete from GPS_PLAN_LINE ;  
+delete from GPS_INSTASK_DAY;
+delete from GPS_INSTASK_DAY_LINE;
+delete from GPS_INSTASK_DAY_LINE_TIME;
+delete from GPS_INSTASK_DAY_POINT;
+commit;
+
+select * from (select distinct t1.* from gps_plan_info t1 left join pri_unit t2 on t1.execunitid=t2.oid and t2.active= 1 
+left join pri_unit t4 on t1.unitid=t4.oid and t4.active= 1  left join gps_plan_line t5 on t5.planeventid=t1.oid and t5.active= 1
+  left join gps_lineloop t3 on t5.lineloopoid=t3.oid and t3.active= 1 
+where
+ t1.active= 1 
+  and t1.planflag like '01' 
+  and (t2.hierarchy like '%Unit.0003%' or t4.hierarchy like '%Unit.0003%') )
+
+
+
+select * from gps_instask_day;
+
+select * from gps_instask_day_line_time;
+```
+### 临时任务
+1. 临时任务只针对巡线工
+
+
+### 轨迹线管理（ 标准 ）		
+1. 该信息从APP录入,该轨迹线是标准轨迹线，与部门和管线关联，在web段选择部门以及管线下的巡检人员，此功能为管道工设置。  
+2. 用于计算巡检分数，通过与巡线员的轨迹线做比较。  
+3. 巡检gps坐标 转成空间数据定时器，今天早上6点之前到明天6点之前的数据要在 明天6点之后执行。
+4. 巡检轨迹线空间数据生成规则，这个**任务几巡就生成几段**  
+5. 标准轨迹线采集要选人 选区段 和任务没关系
+6. 轨迹线数据采集功能。  
+	* 管道工使用APP登陆系统，进入轨迹线采集功能，选择所属部门,管线名称,巡检人员,巡检区段 （巡检人员根据巡检部门id获取，巡检区段根据巡检人员id获取，所以呢，一条标准轨迹线目前只对应人员的一个区段。）,点击开始采集。
+	* 管道工走完后点击结束采集，期间所有的点的数据上传到web端生成标准轨迹线。
+	* 标准轨迹线所涉及的主表是 GPS_PATHLINE_MAIN，记录了管道工在采集的时候的信息，比如起始里程和终止里程，部门，管线，巡检人员以及采集人员。
+	* GPS_PATHLINE_XYPOINT 是标准轨迹线采集坐标点表，记录了标准轨迹线中的采集到的坐标点，里面记录了经纬度，采集时间和轨迹线主表的ID，用来关联主表。
+	* GPS_PATHLINE 是轨迹线空间表,管道工在采集点的时候，所有采集的点组成空间服务需要的数据结构，然后调用空间服务新增方法。用于在之后的轨迹线匹配度计算上。
+	* 在保存巡检轨迹线数据的时候，是管道工在结束采集之后，所有的巡检点数据会先保存在本地，然后数据统一传到web端的 savePathline 方法。  
+	* 生成标准轨迹线空间数据表是在APP端，管道工自己点击按钮生成空间线数据。
+	```java
+	/**
+	 * 
+	  *<p>新增标准轨迹线数据</p>
+	  * @param pathline
+	 */
+	public void savePathline(PathlineMain pathline){
+		//获取巡检区段信息
+		GpsInsrange ge = (GpsInsrange) gpsInsrangeService.get(GpsInsrange.class, pathline.getInsrangeoid());
+		//设置轨迹线范围数据
+		if(ge != null){
+			pathline.setBeginstation(ge.getBeginstation());
+			pathline.setEndstation(ge.getEndstation());
+			pathline.setBeginlocation(ge.getBeginlocation());
+			pathline.setEndlocation(ge.getEndlocation());
+		}
+		//保存主表数据
+		super.save(pathline);
+		//获取坐标数据
+		List<PathlinePoint> pointList = pathline.getPointList();
+		this.setPathlinePoint(pointList, pathline.getOid());
+		//保存点数据
+		pathlinePointService.batchSave(PathlinePoint.class, pointList);
+	}
+	```
+
+
+### 第三方施工  
+如果风险等级是红色（ 5m以内 ），流程如下：  
+> 上报 -> 站长审核 -> 分公司管道科审核。   
+
+如果风险等级不是红色，流程如下：  
+> 上报 -> 站长审核。  
+
+风险等级变更后，根据风险等级重新走流程。
 
