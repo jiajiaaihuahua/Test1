@@ -417,7 +417,13 @@ blockquote {
 </ul>
 </li>
 <li><a href="#14-%E4%B8%B4%E6%97%B6%E4%BB%BB%E5%8A%A1">1.4 <strong>临时任务</strong></a></li>
-<li><a href="#15-%E8%BD%A8%E8%BF%B9%E7%BA%BF%E7%AE%A1%E7%90%86%EF%BC%88%E6%A0%87%E5%87%86%EF%BC%89">1.5 <strong>轨迹线管理（标准）</strong></a></li>
+<li><a href="#15-%E8%BD%A8%E8%BF%B9%E7%BA%BF%E7%AE%A1%E7%90%86%EF%BC%88%E6%A0%87%E5%87%86%EF%BC%89">1.5 <strong>轨迹线管理（标准）</strong></a>
+<ul>
+<li><a href="#151-%E8%83%8C%E6%99%AF">1.5.1 背景</a></li>
+<li><a href="#152-%E5%8A%A8%E6%80%81%E6%A8%A1%E6%8B%9F%E4%B8%80">1.5.2 动态模拟一</a></li>
+<li><a href="#153-%E5%8A%A8%E6%80%81%E6%A8%A1%E6%8B%9F%E4%BA%8C">1.5.3 动态模拟二</a></li>
+</ul>
+</li>
 <li><a href="#16-%E7%AC%AC%E4%B8%89%E6%96%B9%E6%96%BD%E5%B7%A5">1.6 <strong>第三方施工</strong></a></li>
 </ul>
 </li>
@@ -425,6 +431,8 @@ blockquote {
 <h2 id="%E9%80%9A%E7%94%A8"><strong>通用</strong></h2>
  <hr/>
 <ul>
+<li>管道工一周巡检一次系统</li>
+<li>轨迹回放按照任务条数回放</li>
 <li>表单数据权限过滤，获取登陆用户的部门以及本部门下的所有数据。</li>
 </ul>
 <pre class="hljs"><code><div>	<span class="hljs-comment">/* 获取该层级下面所有的数据（包括本层级）*/</span>
@@ -791,9 +799,9 @@ taskcoveragerate = instasklength.divide(subinslength.subtract(unsubinslength), <
 </ul>
 <h3 id="113-%E5%B7%A1%E7%BA%BF%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8">1.1.3. 巡线工考核报表</h3>
 <p>同管道工
-<img src="https://github.com/jiajiaaihuahua/Test1/blob/master/1.jpg?raw=true" alt="巡线工考核报表"></p>
+<img src="https://github.com/jiajiaaihuahua/Test1/blob/master/3.jpg?raw=true" alt="巡线工考核报表"></p>
 <h3 id="114-%E7%AE%A1%E9%81%93%E5%B7%A5%E8%80%83%E6%A0%B8%E6%8A%A5%E8%A1%A8">1.1.4. 管道工考核报表</h3>
-<p><img src="https://github.com/jiajiaaihuahua/Test1/blob/master/1.jpg?raw=true" alt="管道工考核报表">
+<p><img src="https://github.com/jiajiaaihuahua/Test1/blob/master/4.jpg?raw=true" alt="管道工考核报表">
 管道工只按周统计，不按照日统计</p>
 <blockquote>
 <p>管道工统计是一个定时任务，代码位置：cn.jasgroup.jasframework.linepatrolmanage.assessments.service.StatisticsScoreService.java 中的statisticsScoreG 方法。只需执行此方法就可以吧统计完的数据存在表gps_inspector_score中。</p>
@@ -1154,8 +1162,9 @@ SyncErrorRecordService</p>
 A　　　　　　　　　　　　　　E　　　　　　　　　　　F　　　　　　　　　　　B</li>
 </ul>
 <h3 id="132-%E5%B7%A1%E6%A3%80%E8%AE%A1%E5%88%92%E5%AE%9A%E6%97%B6%E7%94%9F%E6%88%90%E5%B7%A1%E6%A3%80%E4%BB%BB%E5%8A%A1">1.3.2. 巡检计划定时生成巡检任务</h3>
-<p>-- 本部门计划，本部门以上的所有计划。 跟当前部门的某一个人去匹配。
-巡检人员任务取巡检人员区段与计划范围中计划和区段交集内的关键点。</p>
+<blockquote>
+<p>本部门计划，本部门以上的所有计划。 跟当前部门的某一个人去匹配。</p>
+</blockquote>
 <ol>
 <li>代码位置：</li>
 </ol>
@@ -1166,7 +1175,7 @@ inspectortype : 01:巡线工，02：管道工。</p>
 </blockquote>
 <ol start="2">
 <li>根据人员类型，获取管道工和巡线工的巡检区段与巡检人员。（区段表：gps_insrange,巡线人员表：gps_inspector，巡线人员的设备ID不能为null，也就是必须要绑定设备。）</li>
-<li>循环所有区段以及人员，根据人员以及区段管线等信息匹配计划。</li>
+<li>循环所有区段以及人员，根据人员以及区段管线等信息匹配计划（这里获取到的是区段和人员的内连接，相当于是所有的区段）, 获取到巡检人员区段与计划范围中计划和区段交集内的关键点。</li>
 <li>如果是巡线工，根据计划生成任务集合</li>
 <li>如果是管道工，管道工生成任务是否开启匹配计划默认为真
 <ul>
@@ -1183,15 +1192,42 @@ inspectortype : 01:巡线工，02：管道工。</p>
 </li>
 </ul>
 </li>
-<li>根据人员区段管线等信息匹配计划（ 涉及的视图 gps_instask_planline ），得到匹配好的计划，此时获取到的实体GpsInstaskDayBo 中的信息是巡检计划的信息；</li>
+<li>根据人员区段管线,部门范围等信息匹配计划（ 涉及的视图 gps_instask_planline ），得到匹配好的计划（何为匹配好的巡检计划，就是该人员所在部门的计划和所在部门的所有上级部门的计划），此时获取到的实体GpsInstaskDayBo 中的信息是巡检计划的信息；</li>
 <li>相同管线、起止里程的数据仅保留最新一条巡检计划数据</li>
-<li>得到了所有有效的巡检计划之后，循环所有的有效巡检计划
+<li>得到了所有有效的巡检计划（什么是有效的巡检计划呢，就是该计划要与巡检员的区段有交集）之后，循环所有的有效巡检计划
 <ul>
 <li>通过部门，管线，起始里程，终止里程，日期 查询到所有的关键点</li>
 <li>如果已经存在任务，不再生成重复任务。</li>
-<li>setInstaskPlanLineList 目的为了获取到有效的所有巡检计划。</li>
-<li>saveInstaskPlan 通过巡检计算保存巡检任务</li>
+<li>setInstaskPlanLineList 目的为了获取到有效的所有巡检计划。
+<ul>
+<li>根据计划生成任务的集合，此任务关联的是人员的区段与计划的范围交集。</li>
 </ul>
+</li>
+<li>saveInstaskPlan 通过巡检计划保存巡检任务
+<ul>
+<li>此方法是存储计划时间</li>
+<li>在巡检计划生成巡检任务时，如果设置了任务时间 任务就按照任务时间来，如果没设置就默认的 日巡 6点到20点 ，夜巡 20点到6点</li>
+</ul>
+</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">if</span>(inspectortype.equals(<span class="hljs-string">"01"</span>)){
+			<span class="hljs-comment">//判断巡线工该计划是否设置巡检时间</span>
+			<span class="hljs-keyword">if</span>(gpsPatrolTimeinfoList == <span class="hljs-keyword">null</span> || gpsPatrolTimeinfoList.size() == <span class="hljs-number">0</span>){
+				<span class="hljs-comment">//按日巡、夜巡默认时间</span>
+				saveInstaskDayLineTime(gpsInstaskDayBo, nowDate, date, keypointlist, gpsInstaskDay.getOid());
+			}<span class="hljs-keyword">else</span>{
+				<span class="hljs-comment">//按设置时间</span>
+				saveInstaskDayLineTimeBySetTime(gpsInstaskDayBo, nowDate, date, keypointlist, gpsInstaskDay.getOid(), gpsPatrolTimeinfoList);
+			}
+		}<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(inspectortype.equals(<span class="hljs-string">"02"</span>)){
+			<span class="hljs-keyword">if</span>(StringUtil.hasText(gpsInstaskDayBo.getPlanevoid())){<span class="hljs-comment">//管道工匹配到计划，按照计划生成巡检时间</span>
+				<span class="hljs-comment">//按日巡、夜巡默认时间</span>
+				saveInstaskDayLineTime(gpsInstaskDayBo, nowDate, date, keypointlist, gpsInstaskDay.getOid());
+			}<span class="hljs-keyword">else</span>{<span class="hljs-comment">//管道工没有匹配到计划，按照一周一巡日巡生成巡检时间</span>
+				savePipeInstaskDayLineTime(gpsInstaskDayBo, nowDate, date, keypointlist, gpsInstaskDay.getOid());
+			}
+		}
+</div></code></pre>
 </li>
 <li>任务线路字表中起始里程和终止里程表示的是任务在这条线路上的起始里程和终止里程，并不是整条线路的起始里程和终止里程。</li>
 <li></li>
@@ -1214,9 +1250,6 @@ insfrequnit 巡检频次单位<br>
 </li>
 <li>
 <p>巡检计划和巡检任务相关表。</p>
-</li>
-<li>
-<p>如果计划跨越区段，还是只生成一条任务，但是任务的线路表会有两条记录。</p>
 </li>
 </ol>
 <pre class="hljs"><code><div><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> GPS_PLAN_INFO;
@@ -1260,11 +1293,29 @@ insfrequnit 巡检频次单位<br>
 <li>临时任务只针对巡线工</li>
 </ol>
 <h3 id="15-%E8%BD%A8%E8%BF%B9%E7%BA%BF%E7%AE%A1%E7%90%86%EF%BC%88%E6%A0%87%E5%87%86%EF%BC%89">1.5 <strong>轨迹线管理（标准）</strong></h3>
+<p><img src="https://github.com/jiajiaaihuahua/Test1/blob/master/5.jpg?raw=true" alt="轨迹线管理"></p>
+<h4 id="151-%E8%83%8C%E6%99%AF">1.5.1 背景</h4>
+<blockquote>
+<p>巡检计划是由管道工制定，人员区段也是管道工设计，而任务是计划与人员区段的交集，所以管道工其实是知道每位人员的任务的，所以正常情况下，巡线工的区段跟巡线工任务以及巡检的轨迹线应该是一样的。<br>
+如果区段超出计划，首先这个管道工制定的计划有问题。其次就是 巡线工不仅要把任务做完，也要把标准轨迹线做完，因为任务的评分是关键点，轨迹线是管道工自己的决策。 我们应该可以当做，任务跟标准轨迹线没有联系，只有标准轨迹线跟任务都是同一段路的时候，人员才会直只一段，否则巡检人员既要把任务中的关键点检查完成，也要按照管道工的标准轨迹线把线走完。</p>
+</blockquote>
+<h4 id="152-%E5%8A%A8%E6%80%81%E6%A8%A1%E6%8B%9F%E4%B8%80">1.5.2 动态模拟一</h4>
+<blockquote>
+<p>我是一名管道工，现在我制定了计划是兰成渝线的A点到B点，我制定了张三的巡线区段是A到F点，李四的区段是F到B点。在录制轨迹线的那天，我带着张三从A点走到F点，带着李四从F点走到B点，则他们的标准轨迹线就是从A到F和F到B。张三分数计算 A到F的巡检轨迹线匹配度 + A到F已完成的关键点 / A到F所有关键点 + 临时关键点分数<br>
+----------------------------------------------------------------------------------------------------<br>
+A--------------------------------------F-----------------------------------------------------------B</p>
+</blockquote>
+<h4 id="153-%E5%8A%A8%E6%80%81%E6%A8%A1%E6%8B%9F%E4%BA%8C">1.5.3 动态模拟二</h4>
+<pre><code>&gt; 我是一名管道工，现在我制定了计划是兰成渝线的A点到B点，我制定了张三的巡线区段是A到F点，李四的区段是F到B点。在录制轨迹线的那天，我觉得F点到E点有一段施工，我想每天去看看，所以**我带着张三从A点走到F点，然后F点再到E点，那么张三的标准轨迹线就是A-F-E，请注意A到F巡线工也要巡检，因为这就是他们的任务，会影响到他关键点的分数。**，带着李四从F点走到B点，则他们的标准轨迹线就是从A-E-A-G和F到B。张三分数计算 A-F-E的巡检轨迹线匹配度 + A到F已完成的关键点 / A到F所有关键点 + 临时关键点分数  
+-----------------------------------------------------------------------------------------------------------------  
+A-------------------------------------F-------------------------------------------------------------------------B  
+-------   ---------------------------------------------------------------------------------------------------------   
+-------E---------------------------------------------------------------------------------------------------------
+</code></pre>
 <ol>
-<li>该信息从APP录入,该轨迹线是标准轨迹线，与部门和管线关联，在web段选择部门以及管线下的巡检人员，此功能为管道工设置。</li>
+<li>该信息从APP录入,该轨迹线是标准轨迹线，与部门和管线，区段关联，在web段选择部门以及管线下的巡检人员，此功能为管道工设置。</li>
 <li>用于计算巡检分数，通过与巡线员的轨迹线做比较。</li>
 <li>巡检gps坐标 转成空间数据定时器，今天早上6点之前到明天6点之前的数据要在 明天6点之后执行。</li>
-<li>巡检轨迹线空间数据生成规则，这个<strong>任务几巡就生成几段</strong></li>
 <li>标准轨迹线采集要选人 选区段 和任务没关系</li>
 <li>轨迹线数据采集功能。
 <ul>
@@ -1276,7 +1327,8 @@ insfrequnit 巡检频次单位<br>
 <li>在保存巡检轨迹线数据的时候，是管道工在结束采集之后，所有的巡检点数据会先保存在本地，然后数据统一传到web端的 savePathline 方法。</li>
 <li>生成标准轨迹线空间数据表是在APP端，管道工自己点击按钮生成空间线数据。</li>
 </ul>
-<pre class="hljs"><code><div><span class="hljs-comment">/**
+</li>
+<li>实际轨迹线，这个<strong>任务几巡就生成几段</strong><pre class="hljs"><code><div><span class="hljs-comment">/**
  * 
   *&lt;p&gt;新增标准轨迹线数据&lt;/p&gt;
   * <span class="hljs-doctag">@param</span> pathline
@@ -1303,7 +1355,8 @@ insfrequnit 巡检频次单位<br>
 </li>
 </ol>
 <h3 id="16-%E7%AC%AC%E4%B8%89%E6%96%B9%E6%96%BD%E5%B7%A5">1.6 <strong>第三方施工</strong></h3>
-<p>如果风险等级是红色（ 5m以内 ），流程如下：</p>
+<p><img src="https://github.com/jiajiaaihuahua/Test1/blob/master/6.jpg?raw=true" alt="第三方施工">
+如果风险等级是红色（ 5m以内 ），流程如下：</p>
 <blockquote>
 <p>上报 -&gt; 站长审核 -&gt; 分公司管道科审核。</p>
 </blockquote>
